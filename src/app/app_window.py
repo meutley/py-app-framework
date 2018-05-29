@@ -1,4 +1,4 @@
-from core import message_dialog, window
+from core import window
 
 class AppWindow(window.Window):
     def __init__(self, title, glade_manager):
