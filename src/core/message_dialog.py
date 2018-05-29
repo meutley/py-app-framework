@@ -7,7 +7,7 @@ def info(parent, text, on_ok = None):
         0,
         Gtk.MessageType.INFO,
         Gtk.ButtonsType.OK,
-        "Login Clicked")
+        text)
     dlg.run()
     __run_callback(on_ok)
     dlg.destroy()
