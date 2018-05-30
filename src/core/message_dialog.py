@@ -2,31 +2,87 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-def info(parent, text, on_ok = None):
-    dlg = Gtk.MessageDialog(parent,
-        0,
-        Gtk.MessageType.INFO,
-        Gtk.ButtonsType.OK,
-        text)
-    dlg.run()
-    __run_callback(on_ok)
-    dlg.destroy()
+from enum import Enum
 
-def question(parent, text, on_yes = None, on_no = None, on_cancel = None):
-    dlg = Gtk.MessageDialog(parent,
-        0,
-        Gtk.MessageType.QUESTION,
-        Gtk.ButtonsType.YES_NO,
-        text)
+class MessageType(Enum):
+    INFO = Gtk.MessageType.INFO
+    QUESTION = Gtk.MessageType.QUESTION
 
-    result = dlg.run()
-    if result == Gtk.ResponseType.YES:
-        __run_callback(on_yes)
-    elif result == Gtk.ResponseType.NO:
-        __run_callback(on_no)
+class ButtonType(Enum):
+    NONE = 0
+    OK = 1
+    CANCEL = 2
+    YES = 3
+    NO = 4
 
-    dlg.destroy()
+class ResponseType(Enum):
+    NONE = -4
+    OK = -5
+    CANCEL = -6
+    YES = -8
+    NO = -9
 
-def __run_callback(callback):
-    if callback != None and callable(callback):
-        callback()
+class MessageDialogBase:
+    __dlg = None
+
+    __handlers = {
+        ResponseType.NONE.value: None,
+        ResponseType.OK.value: None,
+        ResponseType.CANCEL.value: None,
+        ResponseType.YES.value: None,
+        ResponseType.NO.value: None
+    }
+
+    def __init__(self, parent, text, message_type):
+        self.__dlg = Gtk.MessageDialog(parent,
+            0,
+            gtk_message_type(message_type),
+            Gtk.ButtonsType.NONE,
+            text)
+
+    def add_button(self, button_type):
+        # Add the button based on type
+        if button_type == ButtonType.NONE:
+            return self
+        elif button_type == ButtonType.OK:
+            self.__dlg.add_button("OK", Gtk.ResponseType.OK)
+        elif button_type == ButtonType.CANCEL:
+            self.__dlg.add_button("Cancel", Gtk.ResponseType.CANCEL)
+        elif button_type == ButtonType.YES:
+            self.__dlg.add_button("Yes", Gtk.ResponseType.YES)
+        elif button_type == ButtonType.NO:
+            self.__dlg.add_button("No", Gtk.ResponseType.NO)
+        return self
+
+    def set_response_handler(self, response_type, handler):
+        if response_type.value in self.__handlers:
+            self.__handlers[response_type.value] = handler
+        return self
+
+    def run(self):
+        # Run the dialog and handle the response
+        response = self.__dlg.run()
+        self.__handle_response(response)
+        self.__dlg.destroy()
+
+    def __handle_response(self, response):
+        # Run the response handler if it exists and it is callable
+        if response in self.__handlers:
+            handler = self.__handlers[response]
+            if handler != None and callable(handler):
+                handler()
+
+class MessageDialog:
+    @staticmethod
+    def create(message_type, parent, text):
+        try:
+            return MessageDialogBase(parent, text, message_type)
+        except KeyError:
+            raise ValueError("message_type {0} is not supported".format(str(message_type)))
+
+def gtk_message_type(message_type):
+    value_map = {
+        MessageType.INFO: Gtk.MessageType.INFO,
+        MessageType.QUESTION: Gtk.MessageType.QUESTION
+    }
+    return value_map[message_type]
