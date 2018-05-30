@@ -14,9 +14,9 @@ class Application:
 
     def run(self):
         # Show the window and run Gtk main
-        message = "This is a test message dialog."
-
         self.__window.show()
+
+        message = "This is a test message dialog."
         message_dialog.MessageDialog                                                      \
             .create(message_dialog.MessageType.INFO, self.__window.gtk_window(), message) \
             .add_button(message_dialog.ButtonType.OK)                                     \
@@ -24,6 +24,7 @@ class Application:
             .set_response_handler(message_dialog.ResponseType.OK, self.__on_ok)           \
             .set_response_handler(message_dialog.ResponseType.CANCEL, self.__on_cancel)   \
             .run()
+            
         initialize.gtk_main()
 
     def __on_ok(self):

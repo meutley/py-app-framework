@@ -36,7 +36,7 @@ class MessageDialogBase:
     def __init__(self, parent, text, message_type):
         self.__dlg = Gtk.MessageDialog(parent,
             0,
-            gtk_message_type(message_type),
+            message_type.value,
             Gtk.ButtonsType.NONE,
             text)
 
@@ -79,10 +79,3 @@ class MessageDialog:
             return MessageDialogBase(parent, text, message_type)
         except KeyError:
             raise ValueError("message_type {0} is not supported".format(str(message_type)))
-
-def gtk_message_type(message_type):
-    value_map = {
-        MessageType.INFO: Gtk.MessageType.INFO,
-        MessageType.QUESTION: Gtk.MessageType.QUESTION
-    }
-    return value_map[message_type]
